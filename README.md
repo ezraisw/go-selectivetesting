@@ -1,5 +1,5 @@
 # go-selectivetesting
-Perform selective testing on a go project based on the list of input files.
+Perform selective testing on a Go project based on a list of input files and usage information.
 
 ## CLI
 
