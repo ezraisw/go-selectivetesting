@@ -45,33 +45,33 @@ A configuration JSON file can also be passed in instead with `-cfgpath=<string>`
 
 ```json
 {
-    "relativePath": "../",
-    "prettyOutput": true,
-    "patterns": ["./..."],
-    "moduleDir": ".",
-    "depth": 10,
-    "buildFlags": ["mycustombuildflag"],
-    "analyzerOutPath": "analyzer.json",
-    "goTest": {
-        "run": true,
-        "args": "-race -count 2",
-        "parallel": 10
-    },
-    "miscUsages": [
+  "relativePath": "../",
+  "prettyOutput": true,
+  "patterns": ["./..."],
+  "moduleDir": ".",
+  "depth": 10,
+  "buildFlags": ["mycustombuildflag"],
+  "analyzerOutPath": "analyzer.json",
+  "goTest": {
+    "run": true,
+    "args": "-race -count 2",
+    "parallel": 10
+  },
+  "miscUsages": [
+    {
+      "regexp": "^<<basepath>>/migration/.+\\.sql$",
+      "usedBy": [
         {
-            "regexp": "^<<basepath>>/migration/.+\\.sql$",
-            "usedBy": [
-                {
-                    "pkgPath": "github.com/pwnedgod/go-selectivetesting/example1/...",
-                    "testNames": ["*"]
-                },
-                {
-                    "pkgPath": "github.com/pwnedgod/go-selectivetesting/example2/sub",
-                    "testNames": ["TestFunc1", "TestFunc2"]
-                }
-            ]
+          "pkgPath": "github.com/pwnedgod/go-selectivetesting/example1/...",
+          "testNames": ["*"]
+        },
+        {
+          "pkgPath": "github.com/pwnedgod/go-selectivetesting/example2/sub",
+          "testNames": ["TestFunc1", "TestFunc2"]
         }
-    ]
+      ]
+    }
+  ]
 }
 ```
 
