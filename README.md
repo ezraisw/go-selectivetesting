@@ -17,23 +17,29 @@ $ selectivetesting -relativepath="../" -prettyoutput -patterns="./..." -depth=10
 ```
 
   - `-analyzeroutpath=<string>`
-        path to output debug information for analyzer
+        Path to output debug information for analyzer.
   - `-basepkg=<string>`
-        base package path/module name, will be used instead of "&lt;modulepath&gt;/go.mod"
+        Base package path/module name, will be used instead of &lt;modulepath&gt;/go.mod.
   - `-buildflags=<string,string,...>`
-        build flags to use
+        Build flags to use.
   - `-cfgpath=<string>`
-        config file to use for command configuration
+        Config file to use for command configuration.
   - `-depth=<int>`
-        depth of the test search from input files
+        Depth of the test search from input files.
+  - `gotestargs=<string>`
+        The arguments to pass to the go test command. The arguments will be put at the end of the command.
+  - `gotestparallel=int`
+        Maximum number of parallel go test processes. If not set, it will run the test in series.
+  - `gotestrun`
+        Whether to run go test with the result of the output. Will output the testing information instead.
   - `-moduledir=<string>`
-        path to the directory of the module
+        Path to the directory of the module.
   - `-patterns=<string,string,...>`
-        patterns to use for package search
+        Patterns to use for package search.
   - `-prettyoutput`
-        whether to output indented json
+        Whether to output indented json. Will be ignored if -gotestrun is set.
   - `-relativepath=<string>`
-        relative path from current working directory for input files
+        Relative path from current working directory for input files.
 
 A configuration JSON file can also be passed in instead with `-cfgpath=<string>`.
 
@@ -46,6 +52,11 @@ A configuration JSON file can also be passed in instead with `-cfgpath=<string>`
     "depth": 10,
     "buildFlags": ["mycustombuildflag"],
     "analyzerOutPath": "analyzer.json",
+    "goTest": {
+        "run": true,
+        "args": "-race -count 2",
+        "parallel": 10
+    },
     "miscUsages": [
         {
             "regexp": "^<<basepath>>/migration/.+\\.sql$",
