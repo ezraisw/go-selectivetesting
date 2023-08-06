@@ -22,7 +22,12 @@ type config struct {
 	Depth           int             `json:"depth"`
 	BuildFlags      commaSepStrings `json:"buildFlags"`
 	AnalyzerOutPath string          `json:"analyzerOutPath"`
-	MiscUsages      []struct {
+	GoTest          struct {
+		Run      bool   `json:"run"`
+		Args     string `json:"args"`
+		Parallel int    `json:"parallel"`
+	} `json:"goTest"`
+	MiscUsages []struct {
 		Regexp string `json:"regexp"`
 		UsedBy []struct {
 			PkgPath   string           `json:"pkgPath"`

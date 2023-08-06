@@ -23,13 +23,12 @@ func Run() error {
 	crudeTestedPkgs := fa.DetermineTests()
 	testedPkgs := cleanTestedPkgs(basePkg, crudeTestedPkgs)
 	if cfg.AnalyzerOutPath != "" {
-		file, err := os.OpenFile(cfg.AnalyzerOutPath, os.O_WRONLY|os.O_CREATE, 0755)
-		if err != nil {
-			return fmt.Errorf("could create output for analyzer debug: %w", err)
-		}
-		if err := jsonTo(file, true, fa); err != nil {
+		if err := writeFileAnalyzerTo(cfg.AnalyzerOutPath, fa); err != nil {
 			return err
 		}
 	}
-	return jsonTo(os.Stdout, cfg.PrettyOutput, testedPkgs)
+	if !cfg.GoTest.Run {
+		return jsonTo(os.Stdout, cfg.PrettyOutput, testedPkgs)
+	}
+	return runTests(cfg.ModuleDir, cfg.GoTest.Args, cfg.GoTest.Parallel, testedPkgs)
 }

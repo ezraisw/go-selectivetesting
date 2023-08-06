@@ -11,15 +11,15 @@ import (
 	"github.com/pwnedgod/go-selectivetesting/internal/util"
 )
 
-type testedPkg struct {
+type testedPackage struct {
 	PkgPath         string   `json:"pkgPath"`
 	RelativePkgPath string   `json:"relativePkgPath"`
 	TestNames       []string `json:"testNames"`
 	RunRegex        string   `json:"runRegex"`
 }
 
-func cleanTestedPkgs(basePkg string, crudeTestedPkgs map[string]util.Set[string]) []testedPkg {
-	testedPkgs := make([]testedPkg, 0, len(crudeTestedPkgs))
+func cleanTestedPkgs(basePkg string, crudeTestedPkgs map[string]util.Set[string]) []testedPackage {
+	testedPkgs := make([]testedPackage, 0, len(crudeTestedPkgs))
 	for pkgPath, testNameSet := range crudeTestedPkgs {
 		testNames := testNameSet.ToSlice()
 		sort.Strings(testNames)
@@ -39,7 +39,7 @@ func cleanTestedPkgs(basePkg string, crudeTestedPkgs map[string]util.Set[string]
 			}
 		}
 
-		testedPkgs = append(testedPkgs, testedPkg{
+		testedPkgs = append(testedPkgs, testedPackage{
 			PkgPath:         pkgPath,
 			RelativePkgPath: util.RelatifyPath(basePkg, pkgPath),
 			TestNames:       testNames,

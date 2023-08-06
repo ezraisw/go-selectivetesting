@@ -18,14 +18,17 @@ func parseArgs() (cfg config, notablePaths []string, err error) {
 
 	flag.StringVar(&cfgPath, "cfgpath", "", "config file to use for command configuration")
 
-	flag.StringVar(&cfgFromFlag.RelativePath, "relativepath", "", "relative path from current working directory for input files")
-	flag.BoolVar(&cfgFromFlag.PrettyOutput, "prettyoutput", false, "whether to output indented json")
-	flag.Var(&cfgFromFlag.Patterns, "patterns", "patterns to use for package search")
-	flag.StringVar(&cfgFromFlag.ModuleDir, "moduledir", "", "path to the directory of the module")
-	flag.StringVar(&cfgFromFlag.BasePkg, "basepkg", "", "base package path/module name, will be used instead of <modulepath>/go.mod")
-	flag.IntVar(&cfgFromFlag.Depth, "depth", 0, "depth of the test search from input files")
-	flag.Var(&cfgFromFlag.BuildFlags, "buildflags", "build flags to use")
-	flag.StringVar(&cfgFromFlag.AnalyzerOutPath, "analyzeroutpath", "", "path to output debug information for analyzer")
+	flag.StringVar(&cfgFromFlag.RelativePath, "relativepath", "", "Relative path from current working directory for input files.")
+	flag.BoolVar(&cfgFromFlag.PrettyOutput, "prettyoutput", false, "Whether to output indented json. Will be ignored if -gotest is set.")
+	flag.Var(&cfgFromFlag.Patterns, "patterns", "Patterns to use for package search.")
+	flag.StringVar(&cfgFromFlag.ModuleDir, "moduledir", "", "Path to the directory of the module.")
+	flag.StringVar(&cfgFromFlag.BasePkg, "basepkg", "", "Base package path/module name, will be used instead of <modulepath>/go.mod.")
+	flag.IntVar(&cfgFromFlag.Depth, "depth", 0, "Depth of the test search from input files.")
+	flag.Var(&cfgFromFlag.BuildFlags, "buildflags", "Build flags to use.")
+	flag.StringVar(&cfgFromFlag.AnalyzerOutPath, "analyzeroutpath", "", "Path to output debug information for analyzer.")
+	flag.BoolVar(&cfgFromFlag.GoTest.Run, "gotestrun", false, "Whether to run go test with the result of the output. Will output the testing information instead.")
+	flag.StringVar(&cfgFromFlag.GoTest.Args, "gotestargs", "", "The arguments to pass to the go test command. The arguments will be put at the end of the command.")
+	flag.IntVar(&cfgFromFlag.GoTest.Parallel, "gotestparallel", 0, "Maximum number of parallel go test processes.")
 
 	flag.Parse()
 
