@@ -31,3 +31,9 @@ func WithMiscUsages(miscUsages ...MiscUsage) Option {
 		fa.miscUsages = miscUsages
 	}
 }
+
+func WithTestAll(testAll bool) Option {
+	return func(fa *FileAnalyzer) {
+		fa.testAll = testAll
+	}
+}

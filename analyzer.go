@@ -40,7 +40,9 @@ type FileAnalyzer struct {
 	depth      int
 	buildFlags []string
 	miscUsages []MiscUsage
+	testAll    bool
 
+	pkgPaths     util.Set[string]
 	testFuncs    util.Set[*types.Func]
 	definitions  map[string]*definition
 	fileObjNames map[string]util.Set[string]
@@ -55,6 +57,7 @@ func NewFileAnalyzer(basePkg string, notableFileNames []string, options ...Optio
 	fa := &FileAnalyzer{
 		basePkg:          basePkg,
 		notableFileNames: util.SetFrom(notableFileNames),
+		pkgPaths:         make(util.Set[string]),
 		testFuncs:        make(util.Set[*types.Func]),
 		definitions:      make(map[string]*definition),
 		fileObjNames:     make(map[string]util.Set[string]),
@@ -106,6 +109,15 @@ func (fa *FileAnalyzer) Load() error {
 	}, fa.patterns...)
 	if err != nil {
 		return err
+	}
+
+	for _, pkg := range pkgs {
+		pkgPath := pkg.PkgPath
+		if strings.HasSuffix(pkgPath, ".test]") || strings.HasSuffix(pkgPath, ".test") {
+			continue
+		}
+		pkgPath = strings.TrimSuffix(pkg.PkgPath, "_test")
+		fa.pkgPaths.Add(pkgPath)
 	}
 
 	for _, pkg := range pkgs {
@@ -278,10 +290,37 @@ func (fa *FileAnalyzer) addUsage(fset *token.FileSet, usagePos token.Pos, usedOb
 
 func (fa *FileAnalyzer) DetermineTests() map[string]util.Set[string] {
 	testedPkgs := make(map[string]util.Set[string])
+	if fa.testAll {
+		for pkgPath := range fa.pkgPaths {
+			testedPkgs[pkgPath] = util.NewSet("*")
+		}
+		return testedPkgs
+	}
+
 	fa.testsFromUsages(testedPkgs)
 	fa.testsFromMiscUsages(testedPkgs)
 
-	return consolidateTests(testedPkgs)
+	return consolidateTests(fa.trieRoot(), testedPkgs)
+}
+
+func (fa *FileAnalyzer) trieRoot() *trieNode {
+	trieRoot := &trieNode{children: make(map[string]*trieNode)}
+
+	for pkgPath := range fa.pkgPaths {
+		pieces := strings.Split(pkgPath, "/")
+
+		trieCurr := trieRoot
+		for _, piece := range pieces {
+			child := util.MapGetOrCreate(trieCurr.children, piece, func() *trieNode {
+				return &trieNode{children: make(map[string]*trieNode)}
+			})
+			trieCurr = child
+		}
+
+		trieCurr.exists = true
+	}
+
+	return trieRoot
 }
 
 func (fa *FileAnalyzer) testsFromUsages(testedPkgs map[string]util.Set[string]) {

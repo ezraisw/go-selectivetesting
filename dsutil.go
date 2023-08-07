@@ -46,47 +46,65 @@ func (h *traversalPQ) Pop() any {
 
 type trieNode struct {
 	children map[string]*trieNode
+	exists   bool
 	names    util.Set[string]
 }
 
-func consolidateTests(testedPkgs map[string]util.Set[string]) map[string]util.Set[string] {
-	trieRoot := &trieNode{children: make(map[string]*trieNode)}
-
+func consolidateTests(trieRoot *trieNode, testedPkgs map[string]util.Set[string]) map[string]util.Set[string] {
 	for testedPkg, testNames := range testedPkgs {
 		pieces := strings.Split(testedPkg, "/")
 
+		cutoff := false
 		trieCurr := trieRoot
 		for _, piece := range pieces {
 			child, ok := trieCurr.children[piece]
 			if !ok {
-				child = &trieNode{children: make(map[string]*trieNode)}
+				if piece != "..." {
+					cutoff = true
+					break
+				}
+
+				// We just need "..." to be not nil. It should not have a children.
+				child = &trieNode{}
 				trieCurr.children[piece] = child
 			}
 			trieCurr = child
 		}
 
-		trieCurr.names = testNames
+		if !cutoff {
+			trieCurr.names = testNames
+		}
 	}
 
 	newTestedPkgs := make(map[string]util.Set[string])
-	traverseTrie("", trieRoot, newTestedPkgs)
+	traverseTrie("", trieRoot, false, newTestedPkgs)
 	return newTestedPkgs
 }
 
-func traverseTrie(path string, curr *trieNode, testedPkgs map[string]util.Set[string]) {
-	if child, ok := curr.children["..."]; ok {
-		testedPkgs[path+"/..."] = child.names
-		return
+func traverseTrie(path string, curr *trieNode, alwaysAdd bool, testedPkgs map[string]util.Set[string]) {
+	if _, ok := curr.children["..."]; ok {
+		alwaysAdd = true
 	}
 	for piece, child := range curr.children {
+		// Do not handle "...".
+		// It is technically just a marker so that everything below this parent gets added.
+		if piece == "..." {
+			continue
+		}
+
 		nextPath := piece
 		if path != "" {
 			nextPath = path + "/" + piece
 		}
-		if child.names != nil {
-			testedPkgs[nextPath] = child.names
-			continue
+
+		if child.exists {
+			if alwaysAdd {
+				testedPkgs[nextPath] = util.NewSet("*")
+			} else if child.names != nil {
+				testedPkgs[nextPath] = child.names
+			}
 		}
-		traverseTrie(nextPath, child, testedPkgs)
+
+		traverseTrie(nextPath, child, alwaysAdd, testedPkgs)
 	}
 }
