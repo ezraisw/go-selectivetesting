@@ -28,7 +28,8 @@ func Run() error {
 		}
 	}
 	if !cfg.GoTest.Run {
-		return jsonTo(os.Stdout, cfg.PrettyOutput, testedPkgs)
+		testedPkgGroups := groupBy(testedPkgs, cfg.Groups)
+		return jsonTo(os.Stdout, cfg.PrettyOutput, testedPkgGroups)
 	}
 	return runTests(cfg.ModuleDir, cfg.GoTest.Args, cfg.GoTest.Parallel, testedPkgs)
 }

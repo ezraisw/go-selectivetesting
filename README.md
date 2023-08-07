@@ -57,6 +57,10 @@ A configuration JSON file can also be passed in instead with `-cfgpath=<string>`
     "args": "-race -count 2",
     "parallel": 10
   },
+  "groups": [
+      { "name": "internal", "patterns": ["github.com/pwnedgod/go-selectivetesting/internal/..."] },
+      { "name": "main", "patterns": ["github.com/pwnedgod/go-selectivetesting"] }
+  ],
   "miscUsages": [
     {
       "regexp": "^<<basepath>>/migration/.+\\.sql$",

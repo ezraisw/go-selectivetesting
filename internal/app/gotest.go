@@ -22,7 +22,7 @@ func (errs multiError) Error() string {
 	return strings.Join(msgs, "\n")
 }
 
-func runTests(moduleDir, args string, parallel int, testedPkgs []testedPackage) error {
+func runTests(moduleDir, args string, parallel int, testedPkgs []*testedPackage) error {
 	if parallel < 1 {
 		parallel = 1
 	}
@@ -38,7 +38,7 @@ func runTests(moduleDir, args string, parallel int, testedPkgs []testedPackage) 
 		wg.Add(1)
 		qc <- struct{}{}
 
-		go func(testedPkg testedPackage) {
+		go func(testedPkg *testedPackage) {
 			defer func() {
 				<-qc
 				wg.Done()

@@ -13,6 +13,11 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
+type group struct {
+	Name     string   `json:"name"`
+	Patterns []string `json:"patterns"`
+}
+
 type config struct {
 	RelativePath    string          `json:"relativePath"`
 	PrettyOutput    bool            `json:"prettyOutput"`
@@ -27,6 +32,7 @@ type config struct {
 		Args     string `json:"args"`
 		Parallel int    `json:"parallel"`
 	} `json:"goTest"`
+	Groups     []group `json:"groups"`
 	MiscUsages []struct {
 		Regexp string `json:"regexp"`
 		UsedBy []struct {
