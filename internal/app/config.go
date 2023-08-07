@@ -26,6 +26,7 @@ type config struct {
 	BasePkg         string          `json:"basePkg"`
 	Depth           int             `json:"depth"`
 	BuildFlags      commaSepStrings `json:"buildFlags"`
+	TestAll         bool            `json:"testAll"`
 	AnalyzerOutPath string          `json:"analyzerOutPath"`
 	GoTest          struct {
 		Run      bool   `json:"run"`
@@ -79,6 +80,10 @@ func (cfg config) asOptions(pathReplacements map[string]string) ([]selectivetest
 
 	if len(cfg.BuildFlags) > 0 {
 		options = append(options, selectivetesting.WithBuildFlags(cfg.BuildFlags...))
+	}
+
+	if cfg.TestAll {
+		options = append(options, selectivetesting.WithTestAll(cfg.TestAll))
 	}
 
 	if len(cfg.MiscUsages) > 0 {

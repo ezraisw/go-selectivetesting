@@ -25,6 +25,7 @@ func parseArgs() (cfg config, notablePaths []string, err error) {
 	flag.StringVar(&cfgFromFlag.BasePkg, "basepkg", "", "Base package path/module name, will be used instead of <modulepath>/go.mod.")
 	flag.IntVar(&cfgFromFlag.Depth, "depth", 0, "Depth of the test search from input files.")
 	flag.Var(&cfgFromFlag.BuildFlags, "buildflags", "Build flags to use.")
+	flag.BoolVar(&cfgFromFlag.TestAll, "testall", false, "Override output with list of all packages within its groups.")
 	flag.StringVar(&cfgFromFlag.AnalyzerOutPath, "analyzeroutpath", "", "Path to output debug information for analyzer.")
 	flag.BoolVar(&cfgFromFlag.GoTest.Run, "gotestrun", false, "Whether to run go test with the result of the output. Will output the testing information instead.")
 	flag.StringVar(&cfgFromFlag.GoTest.Args, "gotestargs", "", "The arguments to pass to the go test command. The arguments will be put at the end of the command.")

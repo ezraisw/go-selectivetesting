@@ -40,6 +40,8 @@ $ selectivetesting -relativepath="../" -prettyoutput -patterns="./..." -depth=10
         Whether to output indented json. Will be ignored if -gotestrun is set.
   - `-relativepath=<string>`
         Relative path from current working directory for input files.
+  - `-testall`
+        Override output with list of all packages within its groups.
 
 A configuration JSON file can also be passed in instead with `-cfgpath=<string>`.
 
@@ -51,6 +53,7 @@ A configuration JSON file can also be passed in instead with `-cfgpath=<string>`
   "moduleDir": ".",
   "depth": 10,
   "buildFlags": ["mycustombuildflag"],
+  "testAll": false,
   "analyzerOutPath": "analyzer.json",
   "goTest": {
     "run": true,

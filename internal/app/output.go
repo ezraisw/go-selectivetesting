@@ -103,6 +103,9 @@ func groupBy(combinedTestedPkgs []*testedPackage, pkgPatternGroups []group) []*t
 		if cleanedTestedPkgGroups[i].Name == "default" {
 			return true
 		}
+		if cleanedTestedPkgGroups[j].Name == "default" {
+			return false
+		}
 		return cleanedTestedPkgGroups[i].Name < cleanedTestedPkgGroups[j].Name
 	})
 
