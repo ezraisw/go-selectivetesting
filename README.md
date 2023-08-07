@@ -26,11 +26,11 @@ $ selectivetesting -relativepath="../" -prettyoutput -patterns="./..." -depth=10
         Config file to use for command configuration.
   - `-depth=<int>`
         Depth of the test search from input files.
-  - `gotestargs=<string>`
+  - `-gotestargs=<string>`
         The arguments to pass to the go test command. The arguments will be put at the end of the command.
-  - `gotestparallel=int`
+  - `-gotestparallel=int`
         Maximum number of parallel go test processes. If not set, it will run the test in series.
-  - `gotestrun`
+  - `-gotestrun`
         Whether to run go test with the result of the output. Will output the testing information instead.
   - `-moduledir=<string>`
         Path to the directory of the module.
