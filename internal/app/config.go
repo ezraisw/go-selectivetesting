@@ -1,7 +1,6 @@
 package app
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -38,7 +37,9 @@ type config struct {
 		Regexp string `json:"regexp"`
 		UsedBy []struct {
 			PkgPath   string           `json:"pkgPath"`
-			TestNames util.Set[string] `json:"testNames"`
+			All       bool             `json:"all"`
+			FileNames util.Set[string] `json:"fileNames"`
+			ObjNames  util.Set[string] `json:"objNames"`
 		} `json:"usedBy"`
 	} `json:"miscUsages"`
 }
@@ -91,12 +92,24 @@ func (cfg config) asOptions(pathReplacements map[string]string) ([]selectivetest
 		for _, miscUsage := range cfg.MiscUsages {
 			usedBy := make([]selectivetesting.MiscUser, 0, len(miscUsage.UsedBy))
 			for _, miscUser := range miscUsage.UsedBy {
-				if strings.HasSuffix(miscUser.PkgPath, "/...") && (miscUser.TestNames.Len() != 1 || !miscUser.TestNames.Has("*")) {
-					return nil, errors.New("recursive path can only accept a single wildcard")
+				var (
+					recursive bool
+					fileNames util.Set[string]
+					objNames  util.Set[string]
+				)
+				if !strings.HasSuffix(miscUser.PkgPath, "/...") {
+					recursive = true
+				} else {
+					fileNames = miscUser.FileNames
+					objNames = miscUser.ObjNames
 				}
 				usedBy = append(usedBy, selectivetesting.MiscUser{
-					PkgPath:   miscUser.PkgPath,
-					TestNames: miscUser.TestNames,
+					PkgPath: miscUser.PkgPath,
+					All:     recursive,
+
+					// Should only be filled when All is false.
+					FileNames: fileNames,
+					ObjNames:  objNames,
 				})
 			}
 

@@ -6,6 +6,7 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -23,7 +24,9 @@ type definition struct {
 
 type MiscUser struct {
 	PkgPath   string
-	TestNames util.Set[string]
+	All       bool
+	FileNames util.Set[string]
+	ObjNames  util.Set[string]
 }
 
 type MiscUsage struct {
@@ -42,10 +45,12 @@ type FileAnalyzer struct {
 	miscUsages []MiscUsage
 	testAll    bool
 
-	pkgPaths     util.Set[string]
-	testFuncs    util.Set[*types.Func]
-	definitions  map[string]*definition
-	fileObjNames map[string]util.Set[string]
+	pkgPaths         util.Set[string]
+	testFuncs        util.Set[*types.Func]
+	definitions      map[string]*definition
+	pkgTestUniqNames map[string]util.Set[string]
+	pkgObjNames      map[string]util.Set[string]
+	fileObjNames     map[string]util.Set[string]
 }
 
 var defaultOptions = []Option{
@@ -60,6 +65,8 @@ func NewFileAnalyzer(basePkg string, notableFileNames []string, options ...Optio
 		pkgPaths:         make(util.Set[string]),
 		testFuncs:        make(util.Set[*types.Func]),
 		definitions:      make(map[string]*definition),
+		pkgTestUniqNames: make(map[string]util.Set[string]),
+		pkgObjNames:      make(map[string]util.Set[string]),
 		fileObjNames:     make(map[string]util.Set[string]),
 	}
 
@@ -89,21 +96,24 @@ func (fa *FileAnalyzer) getDefinition(obj types.Object) *definition {
 	return fa.definitions[types.ObjectString(obj, nil)]
 }
 
-func (fa *FileAnalyzer) addObj(fileName string, obj types.Object) {
-	objs := util.MapGetOrCreate(fa.fileObjNames, fileName, func() util.Set[string] { return make(util.Set[string]) })
-	objs.Add(types.ObjectString(obj, nil))
+func (fa *FileAnalyzer) addObj(pkgPath, fileName string, obj types.Object) {
+	pkgObjs := util.MapGetOrCreate(fa.pkgObjNames, pkgPath, func() util.Set[string] { return make(util.Set[string]) })
+	pkgObjs.Add(types.ObjectString(obj, nil))
+
+	fileObjs := util.MapGetOrCreate(fa.fileObjNames, fileName, func() util.Set[string] { return make(util.Set[string]) })
+	fileObjs.Add(types.ObjectString(obj, nil))
 }
 
 func (fa *FileAnalyzer) Load() error {
 	pkgs, err := packages.Load(&packages.Config{
 		Dir: fa.moduleDir,
-		Mode: packages.NeedTypes |
-			packages.NeedName |
-			packages.NeedTypesInfo |
-			packages.NeedImports |
+		Mode: packages.NeedCompiledGoFiles |
 			packages.NeedDeps |
+			packages.NeedImports |
+			packages.NeedName |
 			packages.NeedSyntax |
-			packages.NeedCompiledGoFiles,
+			packages.NeedTypes |
+			packages.NeedTypesInfo,
 		BuildFlags: fa.buildFlags,
 		Tests:      true,
 	}, fa.patterns...)
@@ -195,6 +205,10 @@ func (fa *FileAnalyzer) searchTopLevelObjects(pkg *packages.Package) {
 		if strings.HasSuffix(file.Name(), "_test.go") {
 			if f, ok := defObj.(*types.Func); ok && strings.HasPrefix(f.Name(), "Test") && f.Name() != "TestMain" {
 				fa.testFuncs.Add(f)
+				uniqNames := util.MapGetOrCreate(fa.pkgTestUniqNames, strings.TrimSuffix(pkg.PkgPath, "_test"), func() util.Set[string] {
+					return make(util.Set[string])
+				})
+				uniqNames.Add(f.Name())
 			}
 		}
 
@@ -207,7 +221,7 @@ func (fa *FileAnalyzer) searchTopLevelObjects(pkg *packages.Package) {
 		}
 
 		fa.addDefinition(defObj, file.Name(), node)
-		fa.addObj(file.Name(), defObj)
+		fa.addObj(strings.TrimSuffix(pkg.PkgPath, "_test"), file.Name(), defObj)
 	}
 }
 
@@ -298,29 +312,15 @@ func (fa *FileAnalyzer) DetermineTests() map[string]util.Set[string] {
 	}
 
 	fa.testsFromUsages(testedPkgs)
-	fa.testsFromMiscUsages(testedPkgs)
 
-	return consolidateTests(fa.trieRoot(), testedPkgs)
-}
-
-func (fa *FileAnalyzer) trieRoot() *trieNode {
-	trieRoot := &trieNode{children: make(map[string]*trieNode)}
-
-	for pkgPath := range fa.pkgPaths {
-		pieces := strings.Split(pkgPath, "/")
-
-		trieCurr := trieRoot
-		for _, piece := range pieces {
-			child := util.MapGetOrCreate(trieCurr.children, piece, func() *trieNode {
-				return &trieNode{children: make(map[string]*trieNode)}
-			})
-			trieCurr = child
+	// Consolidate test packages that test everything.
+	for pkgPath, testNames := range testedPkgs {
+		if fa.pkgTestUniqNames != nil && testNames.Len() == fa.pkgTestUniqNames[pkgPath].Len() {
+			testedPkgs[pkgPath] = util.NewSet("*")
 		}
-
-		trieCurr.exists = true
 	}
 
-	return trieRoot
+	return testedPkgs
 }
 
 func (fa *FileAnalyzer) testsFromUsages(testedPkgs map[string]util.Set[string]) {
@@ -328,16 +328,18 @@ func (fa *FileAnalyzer) testsFromUsages(testedPkgs map[string]util.Set[string]) 
 	queued := make(map[string]*traversal)
 	queue := make(traversalPQ, 0)
 
-	for notableFileName := range fa.notableFileNames {
-		for objName := range fa.fileObjNames[notableFileName] {
-			t := &traversal{
-				objName:   objName,
-				stepsLeft: fa.depth,
-			}
-			heap.Push(&queue, t)
-			queued[objName] = t
+	fa.queueUp(func(objName string) {
+		if _, ok := queued[objName]; ok {
+			return
 		}
-	}
+
+		t := &traversal{
+			objName:   objName,
+			stepsLeft: fa.depth,
+		}
+		heap.Push(&queue, t)
+		queued[objName] = t
+	})
 
 	for queue.Len() > 0 {
 		t := heap.Pop(&queue).(*traversal)
@@ -376,31 +378,60 @@ func (fa *FileAnalyzer) testsFromUsages(testedPkgs map[string]util.Set[string]) 
 	}
 }
 
-func (fa *FileAnalyzer) testsFromMiscUsages(testedPkgs map[string]util.Set[string]) {
-	for _, miscUsage := range fa.miscUsages {
-		matched := false
-		for notableFileName := range fa.notableFileNames {
-			if miscUsage.Regexp.MatchString(notableFileName) {
-				matched = true
-				break
+func (fa *FileAnalyzer) queueUp(addToQueue func(string)) {
+	for notableFileName := range fa.notableFileNames {
+		for objName := range fa.fileObjNames[notableFileName] {
+			addToQueue(objName)
+		}
+
+		// Add all that are related to misc usage.
+		for _, miscUsage := range fa.miscUsages {
+			if !miscUsage.Regexp.MatchString(notableFileName) {
+				continue
 			}
-		}
 
-		if !matched {
-			continue
-		}
+			for _, user := range miscUsage.UsedBy {
+				// Is recursive?
+				if strings.HasSuffix(user.PkgPath, "/...") {
+					for pkgPath, objNames := range fa.pkgObjNames {
+						if !strings.HasPrefix(pkgPath, user.PkgPath[:len(user.PkgPath)-4]) {
+							continue
+						}
+						for objName := range objNames {
+							addToQueue(objName)
+						}
+					}
 
-		for _, user := range miscUsage.UsedBy {
-			names := util.MapGetOrCreate(testedPkgs, user.PkgPath, func() util.Set[string] { return make(util.Set[string]) })
-			if !names.Has("*") {
-				if user.TestNames.Has("*") {
-					testedPkgs[user.PkgPath] = util.NewSet("*")
-				} else {
-					names.AddFrom(user.TestNames)
+					continue
+				}
+
+				if user.All {
+					for objName := range fa.pkgObjNames[user.PkgPath] {
+						addToQueue(objName)
+					}
+
+					continue
+				}
+
+				for fileName := range user.FileNames {
+					for objName := range fa.fileObjNames[filepath.Join(fa.getPkgDir(user.PkgPath), fileName)] {
+						addToQueue(objName)
+					}
+				}
+
+				for objName := range user.ObjNames {
+					if fa.definitions[objName] == nil {
+						continue
+					}
+					addToQueue(objName)
 				}
 			}
 		}
 	}
+}
+
+func (fa *FileAnalyzer) getPkgDir(pkgPath string) string {
+	return util.RelatifyPath(fa.basePkg, pkgPath)
 }
 
 func (fa *FileAnalyzer) MarshalJSON() ([]byte, error) {
