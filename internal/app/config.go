@@ -105,7 +105,7 @@ func (cfg config) asOptions(pathReplacements map[string]string) ([]selectivetest
 				}
 				usedBy = append(usedBy, selectivetesting.MiscUser{
 					PkgPath: miscUser.PkgPath,
-					All:     recursive,
+					All:     recursive || miscUser.All,
 
 					// Should only be filled when All is false.
 					FileNames: fileNames,
