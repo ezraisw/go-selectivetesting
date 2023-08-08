@@ -87,11 +87,15 @@ A configuration JSON file can also be passed in instead with `-cfgpath=<string>`
       "usedBy": [
         {
           "pkgPath": "github.com/pwnedgod/go-selectivetesting/example1/...",
-          "testNames": ["*"]
+          "all": true
         },
         {
           "pkgPath": "github.com/pwnedgod/go-selectivetesting/example2/sub",
-          "testNames": ["TestFunc1", "TestFunc2"]
+          "objNames": ["FuncUsingNonGoFiles1", "FuncUsingNonGoFiles2"]
+        },
+        {
+          "pkgPath": "github.com/pwnedgod/go-selectivetesting/example2/sub",
+          "fileNames": ["foo.go", "bar.go"]
         }
       ]
     }
