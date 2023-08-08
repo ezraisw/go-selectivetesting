@@ -452,10 +452,6 @@ func (fa *FileAnalyzer) queueUp(addToQueue func(string)) {
 	}
 }
 
-func (fa *FileAnalyzer) getPkgDir(pkgPath string) string {
-	return util.RelatifyPath(fa.basePkg, pkgPath)
-}
-
 func (fa *FileAnalyzer) MarshalJSON() ([]byte, error) {
 	type jsonDefinition struct {
 		File   string           `json:"file"`
