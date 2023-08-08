@@ -97,7 +97,7 @@ func (cfg config) asOptions(pathReplacements map[string]string) ([]selectivetest
 					fileNames util.Set[string]
 					objNames  util.Set[string]
 				)
-				if !strings.HasSuffix(miscUser.PkgPath, "/...") {
+				if strings.HasSuffix(miscUser.PkgPath, "/...") {
 					recursive = true
 				} else {
 					fileNames = miscUser.FileNames

@@ -45,11 +45,12 @@ type FileAnalyzer struct {
 	miscUsages []MiscUsage
 	testAll    bool
 
-	pkgPaths         util.Set[string]
+	pkgDirs          map[string]string
 	testFuncs        util.Set[*types.Func]
 	definitions      map[string]*definition
 	pkgTestUniqNames map[string]util.Set[string]
 	pkgObjNames      map[string]util.Set[string]
+	pkgLocalObjNames map[string]map[string]string
 	fileObjNames     map[string]util.Set[string]
 }
 
@@ -62,11 +63,12 @@ func NewFileAnalyzer(basePkg string, notableFileNames []string, options ...Optio
 	fa := &FileAnalyzer{
 		basePkg:          basePkg,
 		notableFileNames: util.SetFrom(notableFileNames),
-		pkgPaths:         make(util.Set[string]),
+		pkgDirs:          make(map[string]string),
 		testFuncs:        make(util.Set[*types.Func]),
 		definitions:      make(map[string]*definition),
 		pkgTestUniqNames: make(map[string]util.Set[string]),
 		pkgObjNames:      make(map[string]util.Set[string]),
+		pkgLocalObjNames: make(map[string]map[string]string),
 		fileObjNames:     make(map[string]util.Set[string]),
 	}
 
@@ -97,11 +99,16 @@ func (fa *FileAnalyzer) getDefinition(obj types.Object) *definition {
 }
 
 func (fa *FileAnalyzer) addObj(pkgPath, fileName string, obj types.Object) {
+	objName := types.ObjectString(obj, nil)
+
 	pkgObjs := util.MapGetOrCreate(fa.pkgObjNames, pkgPath, func() util.Set[string] { return make(util.Set[string]) })
-	pkgObjs.Add(types.ObjectString(obj, nil))
+	pkgObjs.Add(objName)
+
+	pkgLocalObjs := util.MapGetOrCreate(fa.pkgLocalObjNames, pkgPath, func() map[string]string { return make(map[string]string) })
+	pkgLocalObjs[obj.Name()] = objName
 
 	fileObjs := util.MapGetOrCreate(fa.fileObjNames, fileName, func() util.Set[string] { return make(util.Set[string]) })
-	fileObjs.Add(types.ObjectString(obj, nil))
+	fileObjs.Add(objName)
 }
 
 func (fa *FileAnalyzer) Load() error {
@@ -109,6 +116,7 @@ func (fa *FileAnalyzer) Load() error {
 		Dir: fa.moduleDir,
 		Mode: packages.NeedCompiledGoFiles |
 			packages.NeedDeps |
+			packages.NeedFiles |
 			packages.NeedImports |
 			packages.NeedName |
 			packages.NeedSyntax |
@@ -122,12 +130,7 @@ func (fa *FileAnalyzer) Load() error {
 	}
 
 	for _, pkg := range pkgs {
-		pkgPath := pkg.PkgPath
-		if strings.HasSuffix(pkgPath, ".test]") || strings.HasSuffix(pkgPath, ".test") {
-			continue
-		}
-		pkgPath = strings.TrimSuffix(pkg.PkgPath, "_test")
-		fa.pkgPaths.Add(pkgPath)
+		fa.addPkgPath(pkg)
 	}
 
 	for _, pkg := range pkgs {
@@ -141,6 +144,21 @@ func (fa *FileAnalyzer) Load() error {
 	}
 
 	return nil
+}
+
+func (fa *FileAnalyzer) addPkgPath(pkg *packages.Package) {
+	pkgPath := pkg.PkgPath
+	if strings.HasSuffix(pkgPath, ".test]") || strings.HasSuffix(pkgPath, ".test") {
+		return
+	}
+	pkgPath = strings.TrimSuffix(pkg.PkgPath, "_test")
+
+	var dir string
+	if len(pkg.GoFiles) >= 1 {
+		dir = filepath.Dir(pkg.GoFiles[0])
+	}
+
+	fa.pkgDirs[pkgPath] = dir
 }
 
 func (fa *FileAnalyzer) searchTopLevelObjects(pkg *packages.Package) {
@@ -305,7 +323,7 @@ func (fa *FileAnalyzer) addUsage(fset *token.FileSet, usagePos token.Pos, usedOb
 func (fa *FileAnalyzer) DetermineTests() map[string]util.Set[string] {
 	testedPkgs := make(map[string]util.Set[string])
 	if fa.testAll {
-		for pkgPath := range fa.pkgPaths {
+		for pkgPath := range fa.pkgDirs {
 			testedPkgs[pkgPath] = util.NewSet("*")
 		}
 		return testedPkgs
@@ -414,16 +432,20 @@ func (fa *FileAnalyzer) queueUp(addToQueue func(string)) {
 				}
 
 				for fileName := range user.FileNames {
-					for objName := range fa.fileObjNames[filepath.Join(fa.getPkgDir(user.PkgPath), fileName)] {
+					for objName := range fa.fileObjNames[filepath.Join(fa.pkgDirs[user.PkgPath], fileName)] {
 						addToQueue(objName)
 					}
 				}
 
-				for objName := range user.ObjNames {
-					if fa.definitions[objName] == nil {
+				for localObjName := range user.ObjNames {
+					if fa.pkgLocalObjNames[user.PkgPath] == nil {
 						continue
 					}
-					addToQueue(objName)
+					fullObjName, ok := fa.pkgLocalObjNames[user.PkgPath][localObjName]
+					if !ok {
+						continue
+					}
+					addToQueue(fullObjName)
 				}
 			}
 		}
