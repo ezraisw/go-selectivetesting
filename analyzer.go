@@ -25,8 +25,8 @@ type definition struct {
 type MiscUser struct {
 	PkgPath   string
 	All       bool
-	FileNames util.Set[string]
-	ObjNames  util.Set[string]
+	FileNames []string
+	ObjNames  []string
 }
 
 type MiscUsage struct {
@@ -431,13 +431,13 @@ func (fa *FileAnalyzer) queueUp(addToQueue func(string)) {
 					continue
 				}
 
-				for fileName := range user.FileNames {
+				for _, fileName := range user.FileNames {
 					for objName := range fa.fileObjNames[filepath.Join(fa.pkgDirs[user.PkgPath], fileName)] {
 						addToQueue(objName)
 					}
 				}
 
-				for localObjName := range user.ObjNames {
+				for _, localObjName := range user.ObjNames {
 					if fa.pkgLocalObjNames[user.PkgPath] == nil {
 						continue
 					}

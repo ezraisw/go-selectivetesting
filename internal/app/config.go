@@ -8,7 +8,6 @@ import (
 
 	"dario.cat/mergo"
 	"github.com/pwnedgod/go-selectivetesting"
-	"github.com/pwnedgod/go-selectivetesting/internal/util"
 	"golang.org/x/mod/modfile"
 )
 
@@ -36,10 +35,10 @@ type config struct {
 	MiscUsages []struct {
 		Regexp string `json:"regexp"`
 		UsedBy []struct {
-			PkgPath   string           `json:"pkgPath"`
-			All       bool             `json:"all"`
-			FileNames util.Set[string] `json:"fileNames"`
-			ObjNames  util.Set[string] `json:"objNames"`
+			PkgPath   string   `json:"pkgPath"`
+			All       bool     `json:"all"`
+			FileNames []string `json:"fileNames"`
+			ObjNames  []string `json:"objNames"`
 		} `json:"usedBy"`
 	} `json:"miscUsages"`
 }
@@ -94,8 +93,8 @@ func (cfg config) asOptions(pathReplacements map[string]string) ([]selectivetest
 			for _, miscUser := range miscUsage.UsedBy {
 				var (
 					recursive bool
-					fileNames util.Set[string]
-					objNames  util.Set[string]
+					fileNames []string
+					objNames  []string
 				)
 				if strings.HasSuffix(miscUser.PkgPath, "/...") {
 					recursive = true
