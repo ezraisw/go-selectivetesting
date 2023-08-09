@@ -29,7 +29,7 @@ func cleanTestedPkgs(basePkg string, crudeTestedPkgs map[string]util.Set[string]
 		testNames := testNameSet.ToSlice()
 		sort.Strings(testNames)
 
-		runRegex := ".*"
+		runRegex := "^.*"
 		if !testNameSet.Has("*") {
 			sanitizedTestNames := make([]string, 0, len(testNames))
 			for _, testName := range testNames {
