@@ -71,7 +71,7 @@ func addToGroup(groups map[string]*testedPackageGroup, name string, testedPkg *t
 
 func groupBy(combinedTestedPkgs []*testedPackage, pkgPatternGroups []group) []*testedPackageGroup {
 	// Marker for package paths that has been grouped.
-	grouped := make(util.Set[string])
+	grouped := util.NewSet[string]()
 
 	testedPkgGroups := make(map[string]*testedPackageGroup)
 	for _, pkgPatternGroup := range pkgPatternGroups {

@@ -69,7 +69,7 @@ func NewFileAnalyzer(basePkg string, notableFileNames []string, options ...Optio
 		basePkg:          basePkg,
 		notableFileNames: util.SetFrom(notableFileNames),
 		pkgDirs:          make(map[string]string),
-		testFuncs:        make(util.Set[*types.Func]),
+		testFuncs:        util.NewSet[*types.Func](),
 		definitions:      make(map[string]*definition),
 		pkgTestUniqNames: make(map[string]util.Set[string]),
 		pkgObjNames:      make(map[string]util.Set[string]),
@@ -94,8 +94,8 @@ func (fa *FileAnalyzer) addDefinition(obj types.Object, fileName string, node as
 		obj:            obj,
 		fileName:       fileName,
 		node:           node,
-		usedByObjNames: make(util.Set[string]),
-		usingObjNames:  make(util.Set[string]),
+		usedByObjNames: util.NewSet[string](),
+		usingObjNames:  util.NewSet[string](),
 	}
 }
 
@@ -106,13 +106,13 @@ func (fa *FileAnalyzer) getDefinition(obj types.Object) *definition {
 func (fa *FileAnalyzer) addObj(pkgPath, fileName string, obj types.Object) {
 	objName := types.ObjectString(obj, nil)
 
-	pkgObjs := util.MapGetOrCreate(fa.pkgObjNames, pkgPath, func() util.Set[string] { return make(util.Set[string]) })
+	pkgObjs := util.MapGetOrCreate(fa.pkgObjNames, pkgPath, func() util.Set[string] { return util.NewSet[string]() })
 	pkgObjs.Add(objName)
 
 	pkgLocalObjs := util.MapGetOrCreate(fa.pkgLocalObjNames, pkgPath, func() map[string]string { return make(map[string]string) })
 	pkgLocalObjs[obj.Name()] = objName
 
-	fileObjs := util.MapGetOrCreate(fa.fileObjNames, fileName, func() util.Set[string] { return make(util.Set[string]) })
+	fileObjs := util.MapGetOrCreate(fa.fileObjNames, fileName, func() util.Set[string] { return util.NewSet[string]() })
 	fileObjs.Add(objName)
 }
 
@@ -229,7 +229,7 @@ func (fa *FileAnalyzer) searchTopLevelObjects(pkg *packages.Package) {
 			if f, ok := defObj.(*types.Func); ok && strings.HasPrefix(f.Name(), "Test") && f.Name() != "TestMain" {
 				fa.testFuncs.Add(f)
 				uniqNames := util.MapGetOrCreate(fa.pkgTestUniqNames, strings.TrimSuffix(pkg.PkgPath, "_test"), func() util.Set[string] {
-					return make(util.Set[string])
+					return util.NewSet[string]()
 				})
 				uniqNames.Add(f.Name())
 			}
@@ -380,7 +380,7 @@ func (fa *FileAnalyzer) testsFromUsages(testedPkgs map[string]*TestedPackage) {
 
 			testedPkg := util.MapGetOrCreate(testedPkgs, pkg, func() *TestedPackage {
 				return &TestedPackage{
-					Names:      make(util.Set[string]),
+					Names:      util.NewSet[string](),
 					HasNotable: false,
 				}
 			})
@@ -494,8 +494,8 @@ func (fa *FileAnalyzer) MarshalJSON() ([]byte, error) {
 	for objName, def := range fa.definitions {
 		y := jsonDefinition{
 			File:   def.fileName,
-			UsedBy: make(util.Set[string]),
-			Using:  make(util.Set[string]),
+			UsedBy: util.NewSet[string](),
+			Using:  util.NewSet[string](),
 		}
 		for userObjName := range def.usedByObjNames {
 			y.UsedBy.Add(userObjName)
@@ -507,7 +507,7 @@ func (fa *FileAnalyzer) MarshalJSON() ([]byte, error) {
 	}
 
 	for fileName, objNames := range fa.fileObjNames {
-		y := make(util.Set[string])
+		y := util.NewSet[string]()
 		for objName := range objNames {
 			y.Add(objName)
 		}
