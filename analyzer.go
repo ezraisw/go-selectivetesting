@@ -34,6 +34,11 @@ type MiscUsage struct {
 	UsedBy []MiscUser
 }
 
+type TestedPackage struct {
+	Names      util.Set[string]
+	HasNotable bool
+}
+
 type FileAnalyzer struct {
 	basePkg          string
 	notableFileNames util.Set[string]
@@ -320,11 +325,14 @@ func (fa *FileAnalyzer) addUsage(fset *token.FileSet, usagePos token.Pos, usedOb
 	}
 }
 
-func (fa *FileAnalyzer) DetermineTests() map[string]util.Set[string] {
-	testedPkgs := make(map[string]util.Set[string])
+func (fa *FileAnalyzer) DetermineTests() map[string]*TestedPackage {
+	testedPkgs := make(map[string]*TestedPackage)
 	if fa.testAll {
 		for pkgPath := range fa.pkgDirs {
-			testedPkgs[pkgPath] = util.NewSet("*")
+			testedPkgs[pkgPath] = &TestedPackage{
+				Names:      util.NewSet("*"),
+				HasNotable: true,
+			}
 		}
 		return testedPkgs
 	}
@@ -332,16 +340,16 @@ func (fa *FileAnalyzer) DetermineTests() map[string]util.Set[string] {
 	fa.testsFromUsages(testedPkgs)
 
 	// Consolidate test packages that test everything.
-	for pkgPath, testNames := range testedPkgs {
-		if fa.pkgTestUniqNames != nil && testNames.Len() == fa.pkgTestUniqNames[pkgPath].Len() {
-			testedPkgs[pkgPath] = util.NewSet("*")
+	for pkgPath, testedPkg := range testedPkgs {
+		if fa.pkgTestUniqNames != nil && testedPkg.Names.Len() == fa.pkgTestUniqNames[pkgPath].Len() {
+			testedPkgs[pkgPath].Names = util.NewSet("*")
 		}
 	}
 
 	return testedPkgs
 }
 
-func (fa *FileAnalyzer) testsFromUsages(testedPkgs map[string]util.Set[string]) {
+func (fa *FileAnalyzer) testsFromUsages(testedPkgs map[string]*TestedPackage) {
 	// Multi-source BFS.
 	queued := make(map[string]*traversal)
 	queue := make(traversalPQ, 0)
@@ -370,8 +378,17 @@ func (fa *FileAnalyzer) testsFromUsages(testedPkgs map[string]util.Set[string]) 
 		if f, ok := def.obj.(*types.Func); ok && fa.testFuncs.Has(f) {
 			pkg := strings.TrimSuffix(f.Pkg().Path(), "_test")
 
-			names := util.MapGetOrCreate(testedPkgs, pkg, func() util.Set[string] { return make(util.Set[string]) })
-			names.Add(f.Name())
+			testedPkg := util.MapGetOrCreate(testedPkgs, pkg, func() *TestedPackage {
+				return &TestedPackage{
+					Names:      make(util.Set[string]),
+					HasNotable: false,
+				}
+			})
+			testedPkg.Names.Add(f.Name())
+
+			if t.stepsLeft == fa.depth {
+				testedPkg.HasNotable = true
+			}
 		}
 
 		if t.stepsLeft <= 0 {

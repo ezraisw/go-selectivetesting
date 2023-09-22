@@ -119,6 +119,7 @@ If you choose not to use `-gotestrun`, the application will output a JSON contai
       {
         "pkgPath": "github.com/pwnedgod/examplerepo/pkg/entity",
         "relativePkgPath": "./pkg/entity",
+        "hasNotable": true,
         "testNames": ["TestNewWishlist", "TestWishlist_Model"],
         "runRegex": "^(TestNewWishlist|TestWishlist_Model)$"
       }
@@ -130,6 +131,7 @@ If you choose not to use `-gotestrun`, the application will output a JSON contai
       {
         "pkgPath": "github.com/pwnedgod/examplerepo/pkg/http/handler/api/v1/wishlist",
         "relativePkgPath": "./pkg/http/handler/api/v1/wishlist",
+        "hasNotable": false,
         "testNames": [
           "TestHandler_CreateWishlist",
           "TestHandler_DeleteWishlist"
@@ -144,6 +146,7 @@ If you choose not to use `-gotestrun`, the application will output a JSON contai
       {
         "pkgPath": "github.com/pwnedgod/examplerepo/pkg/repository",
         "relativePkgPath": "./pkg/repository",
+        "hasNotable": false,
         "testNames": [
           "TestWishlist_Create",
           "TestWishlist_Delete",
@@ -163,6 +166,7 @@ If you choose not to use `-gotestrun`, the application will output a JSON contai
       {
         "pkgPath": "github.com/pwnedgod/examplerepo/pkg/usecase/wishlist",
         "relativePkgPath": "./pkg/usecase/wishlist",
+        "hasNotable": false,
         "testNames": [
           "TestWishlistUsecase_CreateWishlist",
           "TestWishlistUsecase_DeleteWishlist",

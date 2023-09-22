@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/pwnedgod/go-selectivetesting"
 	"github.com/pwnedgod/go-selectivetesting/internal/util"
 )
 
@@ -19,18 +20,19 @@ type testedPackageGroup struct {
 type testedPackage struct {
 	PkgPath         string   `json:"pkgPath"`
 	RelativePkgPath string   `json:"relativePkgPath"`
+	HasNotable      bool     `json:"hasNotable"`
 	TestNames       []string `json:"testNames"`
 	RunRegex        string   `json:"runRegex"`
 }
 
-func cleanTestedPkgs(basePkg string, crudeTestedPkgs map[string]util.Set[string]) []*testedPackage {
+func cleanTestedPkgs(basePkg string, crudeTestedPkgs map[string]*selectivetesting.TestedPackage) []*testedPackage {
 	testedPkgs := make([]*testedPackage, 0, len(crudeTestedPkgs))
-	for pkgPath, testNameSet := range crudeTestedPkgs {
-		testNames := testNameSet.ToSlice()
+	for pkgPath, tp := range crudeTestedPkgs {
+		testNames := tp.Names.ToSlice()
 		sort.Strings(testNames)
 
 		runRegex := "^.*"
-		if !testNameSet.Has("*") {
+		if !tp.Names.Has("*") {
 			sanitizedTestNames := make([]string, 0, len(testNames))
 			for _, testName := range testNames {
 				sanitizedTestNames = append(sanitizedTestNames, regexp.QuoteMeta(testName))
@@ -47,6 +49,7 @@ func cleanTestedPkgs(basePkg string, crudeTestedPkgs map[string]util.Set[string]
 		testedPkgs = append(testedPkgs, &testedPackage{
 			PkgPath:         pkgPath,
 			RelativePkgPath: util.RelatifyPath(basePkg, pkgPath),
+			HasNotable:      tp.HasNotable,
 			TestNames:       testNames,
 			RunRegex:        runRegex,
 		})
