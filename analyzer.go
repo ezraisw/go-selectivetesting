@@ -354,6 +354,8 @@ func (fa *FileAnalyzer) testsFromUsages(testedPkgs map[string]*TestedPackage) {
 	queued := make(map[string]*traversal)
 	queue := make(traversalPQ, 0)
 
+	notablePkgs := util.NewSet[string]()
+
 	fa.queueUp(func(objName string) {
 		if _, ok := queued[objName]; ok {
 			return
@@ -365,6 +367,13 @@ func (fa *FileAnalyzer) testsFromUsages(testedPkgs map[string]*TestedPackage) {
 		}
 		heap.Push(&queue, t)
 		queued[objName] = t
+
+		def := fa.definitions[t.objName]
+		if def == nil {
+			return
+		}
+		pkg := strings.TrimSuffix(def.obj.Pkg().Path(), "_test")
+		notablePkgs.Add(pkg)
 	})
 
 	for queue.Len() > 0 {
@@ -386,7 +395,7 @@ func (fa *FileAnalyzer) testsFromUsages(testedPkgs map[string]*TestedPackage) {
 			})
 			testedPkg.Names.Add(f.Name())
 
-			if t.stepsLeft == fa.depth {
+			if notablePkgs.Has(pkg) {
 				testedPkg.HasNotable = true
 			}
 		}
