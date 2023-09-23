@@ -11,36 +11,41 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
+type goTest struct {
+	Run      bool   `json:"run"`
+	Args     string `json:"args"`
+	Parallel int    `json:"parallel"`
+}
+
 type group struct {
 	Name     string   `json:"name"`
 	Patterns []string `json:"patterns"`
 }
 
+type miscUsage struct {
+	Regexp string `json:"regexp"`
+	UsedBy []struct {
+		PkgPath   string   `json:"pkgPath"`
+		All       bool     `json:"all"`
+		FileNames []string `json:"fileNames"`
+		ObjNames  []string `json:"objNames"`
+	} `json:"usedBy"`
+}
+
 type config struct {
-	RelativePath    string          `json:"relativePath"`
-	PrettyOutput    bool            `json:"prettyOutput"`
-	Patterns        commaSepStrings `json:"patterns"`
-	ModuleDir       string          `json:"moduleDir"`
-	BasePkg         string          `json:"basePkg"`
-	Depth           int             `json:"depth"`
-	BuildFlags      commaSepStrings `json:"buildFlags"`
-	TestAll         bool            `json:"testAll"`
-	AnalyzerOutPath string          `json:"analyzerOutPath"`
-	GoTest          struct {
-		Run      bool   `json:"run"`
-		Args     string `json:"args"`
-		Parallel int    `json:"parallel"`
-	} `json:"goTest"`
-	Groups     []group `json:"groups"`
-	MiscUsages []struct {
-		Regexp string `json:"regexp"`
-		UsedBy []struct {
-			PkgPath   string   `json:"pkgPath"`
-			All       bool     `json:"all"`
-			FileNames []string `json:"fileNames"`
-			ObjNames  []string `json:"objNames"`
-		} `json:"usedBy"`
-	} `json:"miscUsages"`
+	RelativePath      string          `json:"relativePath"`
+	PrettyOutput      bool            `json:"prettyOutput"`
+	Patterns          commaSepStrings `json:"patterns"`
+	ModuleDir         string          `json:"moduleDir"`
+	BasePkg           string          `json:"basePkg"`
+	Depth             int             `json:"depth"`
+	BuildFlags        commaSepStrings `json:"buildFlags"`
+	TestAll           bool            `json:"testAll"`
+	AnalyzerOutPath   string          `json:"analyzerOutPath"`
+	GoTest            goTest          `json:"goTest"`
+	Groups            []group         `json:"groups"`
+	OutputEmptyGroups bool            `json:"outputEmptyGroups"`
+	MiscUsages        []miscUsage     `json:"miscUsages"`
 }
 
 func (cfg config) getBasePkg() (string, error) {

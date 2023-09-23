@@ -46,6 +46,8 @@ $ selectivetesting -relativepath="../" -prettyoutput -patterns="./..." -depth=10
   Relative path from current working directory for input files.
 - `-testall`
   Override output with list of all packages within its groups.
+- `-outputemptygroups`
+  Whether to output untested groups as a group with empty arrays. Default group included.
 
 A configuration JSON file can also be passed in instead with `-cfgpath=<string>`.
 
@@ -85,6 +87,7 @@ A configuration JSON file can also be passed in instead with `-cfgpath=<string>`
       "patterns": ["github.com/pwnedgod/examplerepo/pkg/usecase/..."]
     }
   ],
+  "outputEmptyGroups": true,
   "miscUsages": [
     {
       "regexp": "^<<basepath>>/migration/.+\\.sql$",
@@ -113,6 +116,10 @@ If you choose not to use `-gotestrun`, the application will output a JSON contai
 
 ```json
 [
+  {
+    "name": "default",
+    "testedPkgs": []
+  },
   {
     "name": "entity-model",
     "testedPkgs": [

@@ -69,12 +69,13 @@ func addToGroup(groups map[string]*testedPackageGroup, name string, testedPkg *t
 	group.TestedPkgs = append(group.TestedPkgs, testedPkg)
 }
 
-func groupBy(combinedTestedPkgs []*testedPackage, pkgPatternGroups []group) []*testedPackageGroup {
+func groupBy(combinedTestedPkgs []*testedPackage, pkgPatternGroups []group, outputEmptyGroups bool) []*testedPackageGroup {
 	// Marker for package paths that has been grouped.
 	grouped := util.NewSet[string]()
 
 	testedPkgGroups := make(map[string]*testedPackageGroup)
 	for _, pkgPatternGroup := range pkgPatternGroups {
+		empty := true
 		for _, testedPkg := range combinedTestedPkgs {
 			if grouped.Has(testedPkg.PkgPath) {
 				continue
@@ -85,16 +86,32 @@ func groupBy(combinedTestedPkgs []*testedPackage, pkgPatternGroups []group) []*t
 				}
 				grouped.Add(testedPkg.PkgPath)
 				addToGroup(testedPkgGroups, pkgPatternGroup.Name, testedPkg)
+				empty = false
+			}
+		}
+		if empty && outputEmptyGroups {
+			testedPkgGroups[pkgPatternGroup.Name] = &testedPackageGroup{
+				Name:       pkgPatternGroup.Name,
+				TestedPkgs: []*testedPackage{},
 			}
 		}
 	}
 
 	// Handle leftover packages that are not included in any pattern group.
+	defaultEmpty := true
 	for _, testedPkg := range combinedTestedPkgs {
 		if grouped.Has(testedPkg.PkgPath) {
 			continue
 		}
 		addToGroup(testedPkgGroups, "default", testedPkg)
+		defaultEmpty = false
+	}
+
+	if defaultEmpty && outputEmptyGroups {
+		testedPkgGroups["default"] = &testedPackageGroup{
+			Name:       "default",
+			TestedPkgs: []*testedPackage{},
+		}
 	}
 
 	cleanedTestedPkgGroups := make([]*testedPackageGroup, 0)

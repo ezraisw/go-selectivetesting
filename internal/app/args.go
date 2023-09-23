@@ -30,6 +30,7 @@ func parseArgs() (cfg config, notablePaths []string, err error) {
 	flag.BoolVar(&cfgFromFlag.GoTest.Run, "gotestrun", false, "Whether to run go test with the result of the output. Will output the testing information instead.")
 	flag.StringVar(&cfgFromFlag.GoTest.Args, "gotestargs", "", "The arguments to pass to the go test command. The arguments will be put at the end of the command.")
 	flag.IntVar(&cfgFromFlag.GoTest.Parallel, "gotestparallel", 0, "Maximum number of parallel go test processes. If not set, it will run the test in series.")
+	flag.BoolVar(&cfg.OutputEmptyGroups, "outputemptygroups", false, "Whether to output untested groups as a group with empty arrays. Default group included.")
 
 	flag.Parse()
 
