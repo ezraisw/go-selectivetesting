@@ -115,78 +115,81 @@ A configuration JSON file can also be passed in instead with `-cfgpath=<string>`
 If you choose not to use `-gotestrun`, the application will output a JSON containing all the testing groups.
 
 ```json
-[
-  {
-    "name": "default",
-    "testedPkgs": []
-  },
-  {
-    "name": "entity-model",
-    "testedPkgs": [
-      {
-        "pkgPath": "github.com/pwnedgod/examplerepo/pkg/entity",
-        "relativePkgPath": "./pkg/entity",
-        "hasNotable": true,
-        "testNames": ["TestNewWishlist", "TestWishlist_Model"],
-        "runRegex": "^(TestNewWishlist|TestWishlist_Model)$"
-      }
-    ]
-  },
-  {
-    "name": "httphandler",
-    "testedPkgs": [
-      {
-        "pkgPath": "github.com/pwnedgod/examplerepo/pkg/http/handler/api/v1/wishlist",
-        "relativePkgPath": "./pkg/http/handler/api/v1/wishlist",
-        "hasNotable": false,
-        "testNames": [
-          "TestHandler_CreateWishlist",
-          "TestHandler_DeleteWishlist"
-        ],
-        "runRegex": "^(TestHandler_CreateWishlist|TestHandler_DeleteWishlist)$"
-      }
-    ]
-  },
-  {
-    "name": "repo-external",
-    "testedPkgs": [
-      {
-        "pkgPath": "github.com/pwnedgod/examplerepo/pkg/repository",
-        "relativePkgPath": "./pkg/repository",
-        "hasNotable": false,
-        "testNames": [
-          "TestWishlist_Create",
-          "TestWishlist_Delete",
-          "TestWishlist_GetAllByProductSizeSummaryID",
-          "TestWishlist_GetByID",
-          "TestWishlist_GetByProductSizeSummaryIDAndUserID",
-          "TestWishlist_GetByProductTypeAndProductCode",
-          "TestWishlist_ListUserWishlists"
-        ],
-        "runRegex": "^(TestWishlist_Create|TestWishlist_Delete|TestWishlist_GetAllByProductSizeSummaryID|TestWishlist_GetByID|TestWishlist_GetByProductSizeSummaryIDAndUserID|TestWishlist_GetByProductTypeAndProductCode|TestWishlist_ListUserWishlists)$"
-      }
-    ]
-  },
-  {
-    "name": "usecase",
-    "testedPkgs": [
-      {
-        "pkgPath": "github.com/pwnedgod/examplerepo/pkg/usecase/wishlist",
-        "relativePkgPath": "./pkg/usecase/wishlist",
-        "hasNotable": false,
-        "testNames": [
-          "TestWishlistUsecase_CreateWishlist",
-          "TestWishlistUsecase_DeleteWishlist",
-          "TestWishlistUsecase_GetUserWishlistDetail",
-          "TestWishlistUsecase_GetWishlist",
-          "TestWishlistUsecase_ListUserWishlists",
-          "TestWishlistUsecase_ProcessGeneralPriceUpdate"
-        ],
-        "runRegex": "^(TestWishlistUsecase_CreateWishlist|TestWishlistUsecase_DeleteWishlist|TestWishlistUsecase_GetUserWishlistDetail|TestWishlistUsecase_GetWishlist|TestWishlistUsecase_ListUserWishlists|TestWishlistUsecase_ProcessGeneralPriceUpdate)$"
-      }
-    ]
-  }
-]
+{
+  "uniqueTestCount": 17,
+  "groups": [
+    {
+      "name": "default",
+      "testedPkgs": []
+    },
+    {
+      "name": "entity-model",
+      "testedPkgs": [
+        {
+          "pkgPath": "github.com/pwnedgod/examplerepo/pkg/entity",
+          "relativePkgPath": "./pkg/entity",
+          "hasNotable": true,
+          "testNames": ["TestNewWishlist", "TestWishlist_Model"],
+          "runRegex": "^(TestNewWishlist|TestWishlist_Model)$"
+        }
+      ]
+    },
+    {
+      "name": "httphandler",
+      "testedPkgs": [
+        {
+          "pkgPath": "github.com/pwnedgod/examplerepo/pkg/http/handler/api/v1/wishlist",
+          "relativePkgPath": "./pkg/http/handler/api/v1/wishlist",
+          "hasNotable": false,
+          "testNames": [
+            "TestHandler_CreateWishlist",
+            "TestHandler_DeleteWishlist"
+          ],
+          "runRegex": "^(TestHandler_CreateWishlist|TestHandler_DeleteWishlist)$"
+        }
+      ]
+    },
+    {
+      "name": "repo-external",
+      "testedPkgs": [
+        {
+          "pkgPath": "github.com/pwnedgod/examplerepo/pkg/repository",
+          "relativePkgPath": "./pkg/repository",
+          "hasNotable": false,
+          "testNames": [
+            "TestWishlist_Create",
+            "TestWishlist_Delete",
+            "TestWishlist_GetAllByProductSizeSummaryID",
+            "TestWishlist_GetByID",
+            "TestWishlist_GetByProductSizeSummaryIDAndUserID",
+            "TestWishlist_GetByProductTypeAndProductCode",
+            "TestWishlist_ListUserWishlists"
+          ],
+          "runRegex": "^(TestWishlist_Create|TestWishlist_Delete|TestWishlist_GetAllByProductSizeSummaryID|TestWishlist_GetByID|TestWishlist_GetByProductSizeSummaryIDAndUserID|TestWishlist_GetByProductTypeAndProductCode|TestWishlist_ListUserWishlists)$"
+        }
+      ]
+    },
+    {
+      "name": "usecase",
+      "testedPkgs": [
+        {
+          "pkgPath": "github.com/pwnedgod/examplerepo/pkg/usecase/wishlist",
+          "relativePkgPath": "./pkg/usecase/wishlist",
+          "hasNotable": false,
+          "testNames": [
+            "TestWishlistUsecase_CreateWishlist",
+            "TestWishlistUsecase_DeleteWishlist",
+            "TestWishlistUsecase_GetUserWishlistDetail",
+            "TestWishlistUsecase_GetWishlist",
+            "TestWishlistUsecase_ListUserWishlists",
+            "TestWishlistUsecase_ProcessGeneralPriceUpdate"
+          ],
+          "runRegex": "^(TestWishlistUsecase_CreateWishlist|TestWishlistUsecase_DeleteWishlist|TestWishlistUsecase_GetUserWishlistDetail|TestWishlistUsecase_GetWishlist|TestWishlistUsecase_ListUserWishlists|TestWishlistUsecase_ProcessGeneralPriceUpdate)$"
+        }
+      ]
+    }
+  ]
+}
 ```
 
 ## Manual Usage

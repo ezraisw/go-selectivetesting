@@ -325,7 +325,7 @@ func (fa *FileAnalyzer) addUsage(fset *token.FileSet, usagePos token.Pos, usedOb
 	}
 }
 
-func (fa *FileAnalyzer) DetermineTests() map[string]*TestedPackage {
+func (fa *FileAnalyzer) DetermineTests() (map[string]*TestedPackage, int) {
 	testedPkgs := make(map[string]*TestedPackage)
 	if fa.testAll {
 		for pkgPath := range fa.pkgDirs {
@@ -334,19 +334,22 @@ func (fa *FileAnalyzer) DetermineTests() map[string]*TestedPackage {
 				HasNotable: true,
 			}
 		}
-		return testedPkgs
+		return testedPkgs, -1
 	}
 
 	fa.testsFromUsages(testedPkgs)
 
+	uniqueTestCount := 0
+
 	// Consolidate test packages that test everything.
 	for pkgPath, testedPkg := range testedPkgs {
+		uniqueTestCount += testedPkg.Names.Len()
 		if fa.pkgTestUniqNames != nil && testedPkg.Names.Len() == fa.pkgTestUniqNames[pkgPath].Len() {
 			testedPkgs[pkgPath].Names = util.NewSet("*")
 		}
 	}
 
-	return testedPkgs
+	return testedPkgs, uniqueTestCount
 }
 
 func (fa *FileAnalyzer) testsFromUsages(testedPkgs map[string]*TestedPackage) {

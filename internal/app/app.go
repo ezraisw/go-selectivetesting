@@ -20,7 +20,7 @@ func Run() error {
 	if err := fa.Load(); err != nil {
 		return fmt.Errorf("could not load packages: %w", err)
 	}
-	crudeTestedPkgs := fa.DetermineTests()
+	crudeTestedPkgs, uniqueTestCount := fa.DetermineTests()
 	testedPkgs := cleanTestedPkgs(basePkg, crudeTestedPkgs)
 	if cfg.AnalyzerOutPath != "" {
 		if err := writeFileAnalyzerTo(cfg.AnalyzerOutPath, fa); err != nil {
@@ -29,7 +29,10 @@ func Run() error {
 	}
 	if !cfg.GoTest.Run {
 		testedPkgGroups := groupBy(testedPkgs, cfg.Groups, cfg.OutputEmptyGroups)
-		return jsonTo(os.Stdout, cfg.PrettyOutput, testedPkgGroups)
+		return jsonTo(os.Stdout, cfg.PrettyOutput, testing{
+			UniqueTestCount: uniqueTestCount,
+			Groups:          testedPkgGroups,
+		})
 	}
 	return runTests(cfg.ModuleDir, cfg.GoTest.Args, cfg.GoTest.Parallel, testedPkgs)
 }

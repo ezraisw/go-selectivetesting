@@ -25,6 +25,11 @@ type testedPackage struct {
 	RunRegex        string   `json:"runRegex"`
 }
 
+type testing struct {
+	UniqueTestCount int                   `json:"uniqueTestCount"`
+	Groups          []*testedPackageGroup `json:"groups"`
+}
+
 func cleanTestedPkgs(basePkg string, crudeTestedPkgs map[string]*selectivetesting.TestedPackage) []*testedPackage {
 	testedPkgs := make([]*testedPackage, 0, len(crudeTestedPkgs))
 	for pkgPath, tp := range crudeTestedPkgs {
