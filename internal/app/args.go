@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/pwnedgod/go-selectivetesting"
+	"github.com/ezraisw/go-selectivetesting"
 )
 
 func parseArgs() (cfg config, notablePaths []string, err error) {

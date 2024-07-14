@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pwnedgod/go-selectivetesting"
+	"github.com/ezraisw/go-selectivetesting"
 )
 
 func writeFileAnalyzerTo(path string, fa *selectivetesting.FileAnalyzer) error {

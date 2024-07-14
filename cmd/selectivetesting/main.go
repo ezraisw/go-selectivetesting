@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pwnedgod/go-selectivetesting/internal/app"
+	"github.com/ezraisw/go-selectivetesting/internal/app"
 )
 
 func main() {

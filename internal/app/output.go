@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/pwnedgod/go-selectivetesting"
-	"github.com/pwnedgod/go-selectivetesting/internal/util"
+	"github.com/ezraisw/go-selectivetesting"
+	"github.com/ezraisw/go-selectivetesting/internal/util"
 )
 
 type testedPackageGroup struct {

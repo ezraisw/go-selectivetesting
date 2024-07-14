@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"dario.cat/mergo"
-	"github.com/pwnedgod/go-selectivetesting"
+	"github.com/ezraisw/go-selectivetesting"
 	"golang.org/x/mod/modfile"
 )
 

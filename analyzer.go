@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/pwnedgod/go-selectivetesting/internal/util"
+	"github.com/ezraisw/go-selectivetesting/internal/util"
 	"golang.org/x/tools/go/packages"
 )
 

@@ -9,7 +9,7 @@ Perform selective testing on a Go project based on a list of input files and usa
 Run the following command:
 
 ```
-$ go install github.com/pwnedgod/go-selectivetesting/cmd/selectivetesting@latest
+$ go install github.com/ezraisw/go-selectivetesting/cmd/selectivetesting@latest
 ```
 
 ### Configuration
@@ -69,22 +69,22 @@ A configuration JSON file can also be passed in instead with `-cfgpath=<string>`
   "groups": [
     {
       "name": "entity-model",
-      "patterns": ["github.com/pwnedgod/examplerepo/pkg/entity"]
+      "patterns": ["github.com/ezraisw/examplerepo/pkg/entity"]
     },
     {
       "name": "httphandler",
-      "patterns": ["github.com/pwnedgod/examplerepo/pkg/http/handler/..."]
+      "patterns": ["github.com/ezraisw/examplerepo/pkg/http/handler/..."]
     },
     {
       "name": "repo-external",
       "patterns": [
-        "github.com/pwnedgod/examplerepo/pkg/grpc",
-        "github.com/pwnedgod/examplerepo/pkg/repository"
+        "github.com/ezraisw/examplerepo/pkg/grpc",
+        "github.com/ezraisw/examplerepo/pkg/repository"
       ]
     },
     {
       "name": "usecase",
-      "patterns": ["github.com/pwnedgod/examplerepo/pkg/usecase/..."]
+      "patterns": ["github.com/ezraisw/examplerepo/pkg/usecase/..."]
     }
   ],
   "outputEmptyGroups": true,
@@ -93,15 +93,15 @@ A configuration JSON file can also be passed in instead with `-cfgpath=<string>`
       "regexp": "^<<basepath>>/migration/.+\\.sql$",
       "usedBy": [
         {
-          "pkgPath": "github.com/pwnedgod/go-selectivetesting/example1/...",
+          "pkgPath": "github.com/ezraisw/go-selectivetesting/example1/...",
           "all": true
         },
         {
-          "pkgPath": "github.com/pwnedgod/go-selectivetesting/example2/sub",
+          "pkgPath": "github.com/ezraisw/go-selectivetesting/example2/sub",
           "objNames": ["FuncUsingNonGoFiles1", "FuncUsingNonGoFiles2"]
         },
         {
-          "pkgPath": "github.com/pwnedgod/go-selectivetesting/example2/sub",
+          "pkgPath": "github.com/ezraisw/go-selectivetesting/example2/sub",
           "fileNames": ["foo.go", "bar.go"]
         }
       ]
@@ -126,7 +126,7 @@ If you choose not to use `-gotestrun`, the application will output a JSON contai
       "name": "entity-model",
       "testedPkgs": [
         {
-          "pkgPath": "github.com/pwnedgod/examplerepo/pkg/entity",
+          "pkgPath": "github.com/ezraisw/examplerepo/pkg/entity",
           "relativePkgPath": "./pkg/entity",
           "hasNotable": true,
           "testNames": ["TestNewWishlist", "TestWishlist_Model"],
@@ -138,7 +138,7 @@ If you choose not to use `-gotestrun`, the application will output a JSON contai
       "name": "httphandler",
       "testedPkgs": [
         {
-          "pkgPath": "github.com/pwnedgod/examplerepo/pkg/http/handler/api/v1/wishlist",
+          "pkgPath": "github.com/ezraisw/examplerepo/pkg/http/handler/api/v1/wishlist",
           "relativePkgPath": "./pkg/http/handler/api/v1/wishlist",
           "hasNotable": false,
           "testNames": [
@@ -153,7 +153,7 @@ If you choose not to use `-gotestrun`, the application will output a JSON contai
       "name": "repo-external",
       "testedPkgs": [
         {
-          "pkgPath": "github.com/pwnedgod/examplerepo/pkg/repository",
+          "pkgPath": "github.com/ezraisw/examplerepo/pkg/repository",
           "relativePkgPath": "./pkg/repository",
           "hasNotable": false,
           "testNames": [
@@ -173,7 +173,7 @@ If you choose not to use `-gotestrun`, the application will output a JSON contai
       "name": "usecase",
       "testedPkgs": [
         {
-          "pkgPath": "github.com/pwnedgod/examplerepo/pkg/usecase/wishlist",
+          "pkgPath": "github.com/ezraisw/examplerepo/pkg/usecase/wishlist",
           "relativePkgPath": "./pkg/usecase/wishlist",
           "hasNotable": false,
           "testNames": [
@@ -199,5 +199,5 @@ If you instead want to do your own procedures, you can follow these instructions
 ### Dependency Installation
 
 ```
-$ go get github.com/pwnedgod/go-selectivetesting
+$ go get github.com/ezraisw/go-selectivetesting
 ```
